@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>heX Sample - Captionless Window And Non-client Area Dragging</title>
+<style>
+* {
+  -webkit-user-select: none;
+  font-family: 'Trebuchet MS', Arial, Tahoma, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+*:focus {
+  outline: 0 none;
+}
+hr {
+  border: 0 none;
+  border-bottom: 1px solid #222;
+  border-top: 1px solid #111;
+  margin: 5px 0;
+}
+p {
+  font-size: 20px;
+  line-height: 1.5;
+  margin: .8em;
+}
+.green {
+  background-color: #40aa5f;
+  color: #fff;
+  cursor: move;
+  padding: 3px;
+}
+.fixed {
+  box-sizing: border-box;
+  font-size: 32px;
+  height: 120px;
+  line-height: 0.7;
+  padding: 12px;
+  position: fixed;
+  width: 120px;
+}
+.title {
+  font-size: 30px;
+  padding: 5px;
+  position: relative;
+  z-index: 100;
+}
+.title > .controller {
+  background-color: #fff;
+  color: #40aa5f;
+  cursor: default;
+  float: right;
+  height: 40px;
+  position: fixed;
+  width: 40px;
+}
+.title > .close {
+  right: 3px;
+  top: 3px;
+}
+.title > .close::before {
+  -webkit-transform: rotate(45deg) scale(1.2);
+  content: '+';
+  display: inline-block;
+  font-size: 64px;
+  position: absolute;
+  right: -2px;
+  top: -22px;
+  z-index: 200;
+}
+.title > .maximize {
+  right: 46px;
+  top: 3px;
+}
+.title > .maximize.normal::before {
+  border: 5px solid #40aa5f;
+  bottom: -2px;
+  content: ' ';
+  display: inline-block;
+  height: 16px;
+  position: relative;
+  left: 5px;
+  width: 20px;
+}
+.title > .maximize.maximized::before {
+  background: #fff;
+  border: 5px solid #40aa5f;
+  bottom: 6px;
+  content: ' ';
+  display: inline-block;
+  height: 12px;
+  position: absolute;
+  left: 5px;
+  width: 14px;
+  z-index: 200;
+}
+.title > .maximize.maximized::after {
+  border: 5px solid #40aa5f;
+  bottom: 12px;
+  content: ' ';
+  display: inline-block;
+  height: 12px;
+  position: absolute;
+  left: 9px;
+  width: 16px;
+  z-index: 100;
+}
+.title > .minimize {
+  right: 89px;
+  top: 3px;
+}
+.title > .minimize::before {
+  content: '_';
+  display: inline-block;
+  font-size: 48px;
+  position: absolute;
+  right: 5px;
+  top: -22px;
+  z-index: 200;
+}
+.title > .controller:hover {
+  background-color: #6FE590;
+  color: #fff;
+}
+.title > .controller:active, .title > .controller:focus {
+  background-color: #76B289;
+  color: #fff;
+}
+</style>
+</head>
+<body>
+<h1 class="title green">
+Non-client Area Dragging
+<a class="controller close" href="#"></a>
+<a class="controller maximize" href="#"></a>
+<a class="controller minimize" href="#"></a>
+</h1>
+<hr />
+<p>
+Here is captionless window.
+</p>
+<p>
+All the <span class="green">green</span> areas can be dragged.
+</p>
+<p>
+The behaviors of double-clicking the <span class="green">green</span> areas<br />are consistent with the real caption bar.
+</p>
+<div class="fixed green" style="right:0; top:50px; border-radius: 50%;">
+  You <br />
+  &nbsp;can <br />
+  &nbsp;&nbsp;drag <br />
+  &nbsp;&nbsp;&nbsp;me.
+</div>
+<div class="fixed green" style="bottom:0; left:150px;">
+  You <br />
+  &nbsp;can <br />
+  &nbsp;&nbsp;drag <br />
+  &nbsp;&nbsp;&nbsp;me.
+</div>
+<div class="fixed green" style="left:20px; top:250px; -webkit-transform:skewX(10deg);">
+  You <br />
+  &nbsp;can <br />
+  &nbsp;&nbsp;drag <br />
+  &nbsp;&nbsp;&nbsp;me.
+</div>
+<div class="fixed green" style="bottom:100px; right:100px; -webkit-transform:rotate(45deg);">
+  You <br />
+  &nbsp;can <br />
+  &nbsp;&nbsp;drag <br />
+  &nbsp;&nbsp;&nbsp;me.
+</div>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+
+// initialize the state of the maximize button
+if (hex.formState == hex.NORMAL) {
+  document.querySelector('.maximize').classList.add('normal');
+} else if (hex.formState == hex.MAXIMIZED) {
+  document.querySelector('.maximize').classList.add('maximized');
+}
+
+// bind the elements as caption areas
+document.addEventListener('mousemove', function (e) {
+  if (e.target.classList.contains('green')) {
+    if (!e.target.classList.contains('controller')) {
+      hex.setAsTitleBarAreas(e.clientX, e.clientY);
+    }
+  } else {
+    hex.setAsTitleBarAreas(-1, -1);
+  }
+}, false);
+
+// bind the elements as caption areas which can popup system menu
+document.addEventListener('mouseup', function (e) {
+  if (e.button != 2)
+    return;
+  if (e.target.classList.contains('green')) {
+    if (!e.target.classList.contains('controller')) {
+      hex.showSystemMenu(e.clientX, e.clientY);
+    }
+  }
+}, false);
+// disable the default context menu
+document.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+}, false);
+
+// close command
+document.querySelector('.close').addEventListener('click', function (e) {
+  hex.close();
+}, false);
+// maximize command
+document.querySelector('.maximize').addEventListener('click', function (e) {
+  if (hex.formState == hex.NORMAL) {
+    hex.maximize();
+  } else if (hex.formState == hex.MAXIMIZED) {
+    hex.restore();
+  }
+}, false);
+// minimize command
+document.querySelector('.minimize').addEventListener('click', function (e) {
+  hex.minimize();
+}, false);
+
+// update the state of the maximize button when form state is changed
+window.addEventListener('formResized', function (e) {console.log(e.detail);
+  if (e.detail == hex.MAXIMIZE) {
+    document.querySelector('.maximize').classList.remove('normal');
+    document.querySelector('.maximize').classList.add('maximized');
+  } else if (e.detail == hex.RESTORE) {
+    document.querySelector('.maximize').classList.remove('maximized');
+    document.querySelector('.maximize').classList.add('normal');
+  }
+}, false);
+
+}, false);
+</script>
+</body>
+</html>

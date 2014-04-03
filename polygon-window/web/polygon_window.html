@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html class="white">
+<head>
+<meta charset="utf-8" />
+<title>heX Sample - Polygon Window</title>
+<style>
+* {
+  -webkit-user-select: none;
+  font-family: 'Trebuchet MS', Arial, Tahoma, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+*:focus {
+  outline: 0 none;
+}
+hr {
+  border: 0 none;
+  border-bottom: 1px solid #222;
+  border-top: 1px solid #111;
+  margin: 5px auto;
+  width: 400px;
+}
+p {
+  font-size: 20px;
+  line-height: 1.5;
+  margin: .8em;
+  pointer-events: none;
+  text-align: center;
+}
+.square {
+  left: 100px;
+}
+.square::before {
+  content: 'Square';
+}
+.circle {
+  border-radius: 50%;
+  left: 250px;
+}
+.circle::before {
+  content: 'Circle';
+}
+.triangle {
+  border-bottom: 100px solid transparent;
+  border-left: 50px solid #40aa5f;
+  border-right: 50px solid #40aa5f;
+  height: 0;
+  left: 400px;
+  padding: 0 !important;
+  pointer-events: none;
+  width: 0;
+}
+.triangle::before {
+  content: 'Triangle';
+  left: -35px;
+  line-height: 170px;
+  position: relative;
+}
+.trapezoid {
+  border-bottom: 100px solid transparent;
+  border-left: 50px solid #40aa5f;
+  border-right: 50px solid #40aa5f;
+  height: 0;
+  left: 550px;
+  padding: 0 !important;
+  pointer-events: none;
+  width: 150px !important;
+}
+.trapezoid::before {
+  content: 'Trapezoid';
+  left: -20px;
+  line-height: 150px;
+  position: relative;
+}
+.six-points-star {
+  border-bottom: 100px solid #fad606;
+  border-left: 50px solid transparent;
+  border-right: 50px solid transparent;
+  height: 0;
+  left: 20px;
+  padding: 0 !important;
+  position: fixed;
+  top: 20px;
+  width: 0;
+}
+.six-points-star::after {
+  border-left: 50px solid transparent;
+  border-right: 50px solid transparent;
+  border-top: 100px solid #fad606;
+  content: '';
+  height: 0;
+  left: -50px;
+  position: absolute;
+  top: 30px;
+  width: 0;
+}
+.five-points-star {
+  -webkit-transform: rotate(35deg);
+  border-bottom: 70px  solid #fad606;
+  border-left: 100px solid transparent;
+  border-right: 100px solid transparent;
+  bottom: 20px;
+  color: #fad606;
+  display: block;
+  height: 0 !important;
+  margin: 50px 0;
+  padding: 0 !important;
+  right: 20px;
+  width: 0 !important;
+}
+.five-points-star::before {
+  -webkit-transform: rotate(-35deg);
+  border-bottom: 80px solid #fad606;
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+  content: '';
+  display: block;
+  height: 0;
+  left: -65px;
+  position: absolute;
+  top: -45px;
+  width: 0;
+}
+.five-points-star::after {
+  -webkit-transform: rotate(-70deg);
+  border-bottom: 70px solid #fad606;
+  border-left: 100px solid transparent;
+  border-right: 100px solid transparent;
+  display: block;
+  color: red;
+  content: '';
+  height: 0px;
+  left: -105px;
+  position: absolute;
+  top: 3px;
+  width: 0px;
+}
+.oval {
+  border-radius: 800px / 600px;
+  height: 600px;
+  overflow: hidden;
+  width: 800px;
+}
+.white {
+  background-color: #fff;
+  color: #fff;
+  text-shadow: #000 0px 2px 2px;
+}
+.red {
+  background-color: #ec3e34;
+}
+.green {
+  background-color: #40aa5f;
+  color: #000;
+  cursor: move;
+}
+.yellow {
+  background-color: #fad606;
+}
+.fixed {
+  box-sizing: border-box;
+  font-size: 20px;
+  height: 100px;
+  line-height: 90px;
+  padding: 5px;
+  position: fixed;
+  text-align: center;
+  width: 100px;
+}
+.title {
+  font-size: 30px;
+  padding: 5px;
+  pointer-events: none;
+  position: relative;
+  text-align: center;
+  z-index: 100;
+}
+.controllers {
+  bottom: 100px;
+  left: 470px;
+  position: absolute;
+}
+.controllers > .controller {
+  background-color: #000;
+  color: #40aa5f;
+  cursor: default;
+  float: right;
+  height: 40px;
+  position: absolute;
+  width: 40px;
+}
+.controllers > .close {
+  right: 3px;
+  top: 3px;
+}
+.controllers > .close::before {
+  -webkit-transform: rotate(45deg) scale(1.2);
+  content: '+';
+  display: inline-block;
+  font-size: 64px;
+  position: absolute;
+  right: -2px;
+  top: -22px;
+  z-index: 200;
+}
+.controllers > .maximize {
+  right: 46px;
+  top: 3px;
+}
+.controllers > .maximize.normal::before {
+  border: 5px solid #40aa5f;
+  bottom: -2px;
+  content: ' ';
+  display: inline-block;
+  height: 16px;
+  position: relative;
+  left: 5px;
+  width: 20px;
+}
+.controllers > .maximize.maximized::before {
+  background: #fff;
+  border: 5px solid #40aa5f;
+  bottom: 6px;
+  content: ' ';
+  display: inline-block;
+  height: 12px;
+  position: absolute;
+  left: 5px;
+  width: 14px;
+  z-index: 200;
+}
+.controllers > .maximize.maximized::after {
+  border: 5px solid #40aa5f;
+  bottom: 12px;
+  content: ' ';
+  display: inline-block;
+  height: 12px;
+  position: absolute;
+  left: 9px;
+  width: 16px;
+  z-index: 100;
+}
+.controllers > .minimize {
+  right: 89px;
+  top: 3px;
+}
+.controllers > .minimize::before {
+  content: '_';
+  display: inline-block;
+  font-size: 48px;
+  position: absolute;
+  right: 5px;
+  top: -22px;
+  z-index: 200;
+}
+.controllers > .controller:hover {
+  background-color: #6FE590;
+  color: #000;
+}
+.controllers > .controller:active, .title > .controller:focus {
+  background-color: #76B289;
+  color: #000;
+}
+</style>
+</head>
+<body class="oval green">
+<h1 class="title">
+Polygon Window
+</h1>
+<hr />
+<div class="controllers">
+<a class="controller close" href="javascript:hex.close();"></a>
+<a class="controller minimize" href="javascript:hex.minimize();"></a>
+</div>
+<p>
+Here is polygon window.
+</p>
+<p>
+All the <span class="white">white</span> areas are penetrable.
+</p>
+<p>
+All the <span class="green">green</span> and <span class="yellow">yellow</span> areas can be dragged.
+</p>
+
+<div class="square fixed white"></div>
+<div class="circle fixed white"></div>
+<div class="triangle fixed white"></div>
+<div class="trapezoid fixed white"></div>
+<div class="six-points-star fixed"></div>
+<div class="five-points-star fixed"></div>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+
+// bind the elements as caption areas
+document.addEventListener('mousemove', function (e) {
+  if (e.target.classList.contains('green') ||
+      e.target.classList.contains('six-points-star') ||
+      e.target.classList.contains('five-points-star')) {
+    if (!e.target.classList.contains('controller')) {
+      hex.setAsTitleBarAreas(e.clientX, e.clientY);
+    }
+  } else {
+    hex.setAsTitleBarAreas(-1, -1);
+  }
+}, false);
+
+// bind the elements as caption areas which can popup system menu
+document.addEventListener('mouseup', function (e) {
+  if (e.button != 2)
+    return;
+  if (e.target.classList.contains('green')) {
+    if (!e.target.classList.contains('controller')) {
+      hex.showSystemMenu(e.clientX, e.clientY);
+    }
+  }
+}, false);
+// disable the default context menu
+document.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+}, false);
+
+}, false);
+</script>
+</body>
+</html>
