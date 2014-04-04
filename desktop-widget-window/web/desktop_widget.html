@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>heX Sample - Desktop Widget</title>
+<style>
+* {
+  -webkit-user-select: none;
+  font-family: 'Trebuchet MS', Arial, Tahoma, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+*:focus {
+  outline: 0 none;
+}
+p {
+  color: #ffe;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1.1;
+  margin: .3em;
+  pointer-events: none;
+  position: relative;
+  top: -35px;
+}
+#hexagon {
+  background-color: #40aa5f;
+  height: 110px;
+  left: 0;
+  position: absolute;
+  text-align: center;
+  top: 50px;
+  width: 200px;
+}
+#hexagon:before {
+  border-bottom: 50px solid #40aa5f;
+  border-left: 100px solid transparent;
+  border-right: 100px solid transparent;
+  content: "";
+  height: 0;
+  left: 0;
+  position: absolute;
+  top: -50px;
+  width: 0;
+}
+#hexagon:after {
+  border-left: 100px solid transparent;
+  border-right: 100px solid transparent;
+  border-top: 50px solid #40aa5f;
+  bottom: -50px;
+  content: "";
+  height: 0;
+  left: 0;
+  position: absolute;
+  width: 0;
+}
+
+.close {
+  background-color: #ffe;
+  bottom: -30px;
+  color: #40aa5f;
+  cursor: default;
+  float: right;
+  height: 40px;
+  position: absolute;
+  right: 80px;
+  width: 40px;
+  z-index: 100;
+}
+.close::before {
+  -webkit-transform: rotate(45deg) scale(1.2);
+  content: '+';
+  display: inline-block;
+  font-size: 64px;
+  position: absolute;
+  right: -1px;
+  top: -22px;
+  z-index: 200;
+}
+</style>
+</head>
+<body>
+<div id="hexagon">
+<p>I'm a<br /> Desktop Widget.</p>
+<p>I can be dragged only on desktop.</p>
+<p>"Show Desktop" can do nothing to me.</p>
+<a class="controller close" href="javascript:hex.close();"></a>
+</div>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+
+// bind the elements as caption areas
+document.addEventListener('mousemove', function (e) {
+  if (e.target.id == 'hexagon') {
+    if (!e.target.classList.contains('close')) {
+      hex.setAsTitleBarAreas(e.clientX, e.clientY);
+    }
+  } else {
+    hex.setAsTitleBarAreas(-1, -1);
+  }
+}, false);
+
+// bind the elements as caption areas which can popup system menu
+document.addEventListener('mouseup', function (e) {
+  if (e.button != 2)
+    return;
+  if (e.target.id == 'hexagon') {
+    if (!e.target.classList.contains('close')) {
+      hex.showSystemMenu(e.clientX, e.clientY);
+    }
+  }
+}, false);
+// disable the default context menu
+document.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+}, false);
+
+}, false);
+</script>
+</body>
+</html>
