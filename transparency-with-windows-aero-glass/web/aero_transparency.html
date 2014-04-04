@@ -2,16 +2,32 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>heX Sample - Captionless Window And Non-client Area Dragging</title>
+<title>heX Sample - Transparency with Windows Aero Glass</title>
 <style>
 * {
   -webkit-user-select: none;
+  background-color: transparent;
   font-family: 'Trebuchet MS', Arial, Tahoma, sans-serif;
   margin: 0;
   padding: 0;
 }
 *:focus {
   outline: 0 none;
+}
+.green {
+  background-color: rgba(64,170,95,.6);
+  color: #fff;
+  cursor: default;
+  padding: 3px;
+}
+h1 {
+  height: 46px;
+  margin: .8em 0;
+  padding: 0 1em !important;
+}
+h1 > span {
+  font-size: .7em;
+  pointer-events: none;
 }
 hr {
   border: 0 none;
@@ -24,34 +40,17 @@ p {
   line-height: 1.5;
   margin: .8em;
 }
-.green {
-  background-color: #40aa5f;
-  color: #fff;
-  cursor: move;
-  padding: 3px;
-}
-.fixed {
-  box-sizing: border-box;
-  font-size: 32px;
-  height: 120px;
-  line-height: 0.7;
-  padding: 12px;
-  position: fixed;
-  width: 120px;
-}
 .title {
-  font-size: 30px;
-  padding: 5px;
-  position: relative;
-  z-index: 100;
+  position: fixed;
+  top: 26px;
+  right: 0;
 }
 .title > .controller {
   background-color: #fff;
   color: #40aa5f;
   cursor: default;
-  float: right;
   height: 40px;
-  position: fixed;
+  position: absolute;
   width: 40px;
 }
 .title > .close {
@@ -126,55 +125,33 @@ p {
   background-color: #76B289;
   color: #fff;
 }
+
 </style>
 </head>
 <body>
-<h1 class="title green">
-Non-client Area Dragging
+<div class="title">
 <a class="controller close" href="#"></a>
 <a class="controller maximize" href="#"></a>
 <a class="controller minimize" href="#"></a>
-</h1>
+</div>
+<h1 class="green">Transparency <span>with Windows Aero Glass</span></h1>
 <hr />
-<p>
-Here is captionless window.
-</p>
-<p>
-All the <span class="green">green</span> areas can be dragged.
-</p>
-<p>
-The behaviors of double-clicking the <span class="green">green</span> areas<br />are consistent with the real caption bar.
-</p>
-<div class="fixed green" style="right:0; top:50px; border-radius: 50%;">
-  You <br />
-  &nbsp;can <br />
-  &nbsp;&nbsp;drag <br />
-  &nbsp;&nbsp;&nbsp;me.
-</div>
-<div class="fixed green" style="bottom:0; left:150px;">
-  You <br />
-  &nbsp;can <br />
-  &nbsp;&nbsp;drag <br />
-  &nbsp;&nbsp;&nbsp;me.
-</div>
-<div class="fixed green" style="left:20px; top:250px; -webkit-transform:skewX(10deg);">
-  You <br />
-  &nbsp;can <br />
-  &nbsp;&nbsp;drag <br />
-  &nbsp;&nbsp;&nbsp;me.
-</div>
-<div class="fixed green" style="bottom:100px; right:100px; -webkit-transform:rotate(45deg);">
-  You <br />
-  &nbsp;can <br />
-  &nbsp;&nbsp;drag <br />
-  &nbsp;&nbsp;&nbsp;me.
-</div>
+<p>Transparency only works with Windows Vista and above which turn on Aero Glass.</p>
+<p>So, The background-color will be white in Windows XP or without Aero Glass. In this case, we should design minimize, maximize and close command button by ourselves.</p>
+<br />
+<p>The <span class="green">green</span> area can be dragged.</p>
 <script>
 window.addEventListener('DOMContentLoaded', function () {
 
 var close = document.querySelector('.close');
 var max = document.querySelector('.maximize')
 var min = document.querySelector('.minimize')
+
+if (hex.aeroGlassEnabled) {
+  close.parentElement.style.display = 'none';
+} else {
+  close.parentElement.style.display = 'block';
+}
 
 // initialize the state of the maximize button
 if (hex.formState == hex.NORMAL) {
@@ -186,9 +163,9 @@ if (hex.formState == hex.NORMAL) {
 // bind the elements as caption areas
 document.addEventListener('mousemove', function (e) {
   if (e.target.classList.contains('green')) {
-    //if (!e.target.classList.contains('controller')) {
+    if (!e.target.classList.contains('controller')) {
       hex.setAsTitleBarAreas(e.clientX, e.clientY);
-    //}
+    }
   } else {
     hex.setAsTitleBarAreas(-1, -1);
     hex.setAsNonBorderAreas(-1, -1);
@@ -267,7 +244,15 @@ close.addEventListener('mousemove', controllerOnMouseMove, false);
 max.addEventListener('mousemove', controllerOnMouseMove, false);
 min.addEventListener('mousemove', controllerOnMouseMove, false);
 
+window.addEventListener('formAeroChanged', function (e) {
+  if (!e.detail) {
+    close.parentElement.style.display = 'block';
+  } else {
+    close.parentElement.style.display = 'none';
+  }
+}, false);
+
 }, false);
 </script>
 </body>
-</html> 
+</html>
