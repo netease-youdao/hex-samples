@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>heX Sample - Opacity Window</title>
+<style>
+* {
+  -webkit-user-select: none;
+  font-family: 'Trebuchet MS', Arial, Tahoma, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+*:focus {
+  outline: 0 none;
+}
+body {
+  margin: 1em;
+}
+hr {
+  border: 0 none;
+  border-bottom: 1px solid #222;
+  border-top: 1px solid #111;
+  margin: 5px 0;
+}
+p {
+  background-color: #fad606;
+  height: 40px;
+  margin: .8em;
+  position: relative;
+}
+input[type=range]::before {
+  -webkit-transform: skew(0deg);
+  -webkit-transition: all .8s ease;
+  color: #fff;
+  content: attr(min);
+  padding: 0 10px;
+  position: relative;
+  opacity: 1;
+  top: -5px;
+}
+input[type=range]::after {
+  -webkit-transform: skew(0deg);
+  -webkit-transition: all .8s ease;
+  color: #fff;
+  content: attr(max);
+  padding: 0 10px;
+  position: relative;
+  opacity: 1;
+  top: -5px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  box-shadow: 0 -1px 1px black inset;
+  cursor: default;
+  top: 1px;
+  width: 200px;
+  background-color: #40aa5f;
+  border-radius: 15px;
+  opacity: .8;
+}
+input[type=range]::-webkit-slider-thumb::after {
+  color: #fff;
+  content: 'Opacity Window';
+  display: inline-block;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1.5;
+  text-align: center;
+  width: 100%;
+}
+input[type=range]:hover::-webkit-slider-thumb::after {
+  color: #fad606;
+}
+input[type=range]:hover ~ .value,
+input[type=range]:active ~ .value {
+  -webkit-transform: skew(0deg);
+  opacity: 1;
+}
+input[type=range]:hover::after,
+input[type=range]:active::after {
+  -webkit-transform: skew(-180deg);
+  opacity: 0;
+}
+input[type=range] {
+  -webkit-appearance: none;
+  background-color: #40aa5f;
+  box-sizing: border-box;
+  font-size: 20px;
+  height: 16px;
+  position: relative;
+  top: 11px;
+  width: 100%;
+}
+.value {
+  -webkit-transform: skew(180deg);
+  -webkit-transition: all .8s ease;
+  opacity: 0;
+  color: #fff;
+  font-size: 20px;
+  position: absolute;
+  right: 10px;
+  top: 7px;
+}
+</style>
+</head>
+<body>
+<h2>Slice me!</h2>
+<p>
+<input class="range" type="range" min="40" max="255" step="1" value="255" onchange="document.querySelector('.value').innerText=this.value;hex.transparency=this.value;" />
+<span class="value">255</span>
+</p>
+</body>
+</html>

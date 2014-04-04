@@ -118,7 +118,7 @@ p {
   top: -22px;
   z-index: 200;
 }
-.title > .controller:hover {
+.title > .controller.hover {
   background-color: #6FE590;
   color: #fff;
 }
@@ -172,21 +172,26 @@ The behaviors of double-clicking the <span class="green">green</span> areas<br /
 <script>
 window.addEventListener('DOMContentLoaded', function () {
 
+var close = document.querySelector('.close');
+var max = document.querySelector('.maximize')
+var min = document.querySelector('.minimize')
+
 // initialize the state of the maximize button
 if (hex.formState == hex.NORMAL) {
-  document.querySelector('.maximize').classList.add('normal');
+  max.classList.add('normal');
 } else if (hex.formState == hex.MAXIMIZED) {
-  document.querySelector('.maximize').classList.add('maximized');
+  max.classList.add('maximized');
 }
 
 // bind the elements as caption areas
 document.addEventListener('mousemove', function (e) {
   if (e.target.classList.contains('green')) {
-    if (!e.target.classList.contains('controller')) {
+    //if (!e.target.classList.contains('controller')) {
       hex.setAsTitleBarAreas(e.clientX, e.clientY);
-    }
+    //}
   } else {
     hex.setAsTitleBarAreas(-1, -1);
+    hex.setAsNonBorderAreas(-1, -1);
   }
 }, false);
 
@@ -206,11 +211,11 @@ document.addEventListener('contextmenu', function (e) {
 }, false);
 
 // close command
-document.querySelector('.close').addEventListener('click', function (e) {
+close.addEventListener('click', function (e) {
   hex.close();
 }, false);
 // maximize command
-document.querySelector('.maximize').addEventListener('click', function (e) {
+max.addEventListener('click', function (e) {
   if (hex.formState == hex.NORMAL) {
     hex.maximize();
   } else if (hex.formState == hex.MAXIMIZED) {
@@ -218,20 +223,49 @@ document.querySelector('.maximize').addEventListener('click', function (e) {
   }
 }, false);
 // minimize command
-document.querySelector('.minimize').addEventListener('click', function (e) {
+min.addEventListener('click', function (e) {
   hex.minimize();
 }, false);
 
 // update the state of the maximize button when form state is changed
-window.addEventListener('formResized', function (e) {console.log(e.detail);
+window.addEventListener('formResized', function (e) {
   if (e.detail == hex.MAXIMIZE) {
-    document.querySelector('.maximize').classList.remove('normal');
-    document.querySelector('.maximize').classList.add('maximized');
+    max.classList.remove('normal');
+    max.classList.add('maximized');
   } else if (e.detail == hex.RESTORE) {
-    document.querySelector('.maximize').classList.remove('maximized');
-    document.querySelector('.maximize').classList.add('normal');
+    max.classList.remove('maximized');
+    max.classList.add('normal');
   }
 }, false);
+
+// close, maximize, minimize command events
+window.addEventListener('formMouseLeave', function (e) {
+  var event = document.createEvent('MouseEvent');
+  event.initMouseEvent('mouseout', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+  close.dispatchEvent(event);
+  max.dispatchEvent(event);
+  min.dispatchEvent(event);
+}, false);
+function controllerOnMouseOut (e) {
+  this.classList.remove('hover');
+}
+function controllerOnMouseOver (e) {
+  this.classList.add('hover');
+}
+function controllerOnMouseMove (e) {
+  hex.setAsTitleBarAreas(-1, -1);
+  hex.setAsNonBorderAreas(e.clientX, e.clientY);
+  e.stopPropagation();
+}
+close.addEventListener('mouseout', controllerOnMouseOut, false);
+max.addEventListener('mouseout', controllerOnMouseOut, false);
+min.addEventListener('mouseout', controllerOnMouseOut, false);
+close.addEventListener('mouseover', controllerOnMouseOver, false);
+max.addEventListener('mouseover', controllerOnMouseOver, false);
+min.addEventListener('mouseover', controllerOnMouseOver, false);
+close.addEventListener('mousemove', controllerOnMouseMove, false);
+max.addEventListener('mousemove', controllerOnMouseMove, false);
+min.addEventListener('mousemove', controllerOnMouseMove, false);
 
 }, false);
 </script>
