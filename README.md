@@ -23,5 +23,5 @@ Just copy the samples in each directory to the path where heX main program resid
 ## desktop-widget-window
 ![](https://raw.githubusercontent.com/netease-youdao/hex-samples/master/desktop-widget-window/desktop_widget.png)
 
-## gone-with-the-clouds
+## gone-with-the-clouds (with Windows Aero Glass)
 ![](https://raw.githubusercontent.com/netease-youdao/hex-samples/master/gone-with-the-clouds/clouds.png)
