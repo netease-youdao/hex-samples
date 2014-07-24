@@ -1,0 +1,288 @@
+<!-- Copyright (c) 2014 NetEase Youdao Inc. and other heX contributors. All
+     rights reserved. Use of this source code is governed by a BSD-style license
+     that can be found in the LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Shortcut Extension Test</title>
+<style>
+* {
+  font-family: 'Trebuchet MS';
+  outline: none;
+}
+body {
+  margin: 0;
+}
+h1 {
+  -webkit-user-select: none;
+  padding: 0.5em 20%;
+  background-color: rgba(140, 140, 140, .8);
+  margin: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  cursor: default;
+  white-space: nowrap;
+}
+.parameter {
+  margin: 0.8em 0;
+  position: relative;
+  background-color: rgba(140, 140, 140, .3);
+}
+h1 + .parameter {
+  margin-top: 90px;
+}
+.parameter > label {
+  display: inline-block;
+  width: 24%;
+  text-align: right;
+  font-weight: bold;
+  font-size: 14px;
+}
+.parameter > span {
+  margin-right: 1em;
+}
+.parameter input[type=text] {
+  height: 25px;
+  width: 70%;
+  box-sizing: border-box;
+  vertical-align: middle;
+  padding-left: 4px;
+  padding-right: 40px;
+}
+.parameter input:last-child {
+  padding-right: 4px !important;
+}
+.parameter input[type=file] {
+  height: 19px;
+  width: 30px;
+  box-sizing: border-box;
+  position: absolute;
+  right: 6%;
+  top: 3px;
+  font-size: 12px;
+}
+.parameter input[type=radio] {
+  background-color: transparent;
+}
+.ak {
+  text-decoration: underline;
+}
+.parameter > .execute_wrapper {
+  width: 70%;
+  display: inline-block;
+  vertical-align: middle;
+}
+.parameter > .execute_wrapper > textarea {
+  resize: none;
+  height: 150px;
+  margin: 0;
+  width: 80%;
+  box-sizing: border-box;
+  vertical-align: top;
+  font-family: 'Courier New';
+}
+.parameter .buttons {
+  width: 18%;
+  height: 150px;
+  float: right;
+  font-weight: bold;
+  font-size: 1em;
+}
+.parameter .buttons > button, .parameter .buttons > .button {
+  width: 100%;
+  box-sizing: border-box;
+  height: 33%;
+  display: block;
+  white-space: nowrap;
+}
+.parameter .buttons > .button > button {
+  width: 50%;
+  box-sizing: border-box;
+  height: 100%;
+}
+</style>
+</head>
+<body>
+<h1>Shortcut Extension Test</h1>
+<div class="parameter">
+  <label for="s_path" accesskey="p">Shortcut <span class="ak">P</span>ath: </label>
+  <input type="text" name="s_path" id="s_path" />
+  <input type="file" webkitDirectory hexfiletypebuttonvalue="..." />
+</div>
+<div class="parameter">
+  <label for="s_target" accesskey="t">Shortcut <span class="ak">T</span>arget: </label>
+  <input type="text" name="s_target" id="s_target" />
+  <input type="file" hexfiletypebuttonvalue="..." />
+</div>
+<div class="parameter">
+  <label for="s_args" accesskey="a">Shortcut <span class="ak">A</span>rguments: </label>
+  <input type="text" name="s_args" id="s_args" />
+</div>
+<div class="parameter">
+  <label for="s_wd" accesskey="w">Shortcut <span class="ak">W</span>orking Directory: </label>
+  <input type="text" name="s_wd" id="s_wd" />
+  <input type="file" webkitDirectory hexfiletypebuttonvalue="..." />
+</div>
+<div class="parameter">
+  <label for="s_desc" accesskey="d">Shortcut <span class="ak">D</span>escription: </label>
+  <input type="text" name="s_desc" id="s_desc" />
+</div>
+<div class="parameter">
+  <label for="s_icon_path" accesskey="i">Shortcut <span class="ak">I</span>con Path: </label>
+  <input type="text" name="s_icon_path" id="s_icon_path" />
+  <input type="file" hexfiletypebuttonvalue="..." />
+</div>
+<div class="parameter">
+  <label for="s_icon_index" accesskey="c">Shortcut I<span class="ak">c</span>on Index: </label>
+  <input type="number" name="s_icon_index" id="s_icon_index" value="0" />
+</div>
+<div class="parameter">
+  <label for="params" accesskey="m">Para<span class="ak">m</span>eters: </label>
+  <div class="execute_wrapper">
+    <textarea id="params" name="params" readonly></textarea>
+    <div class="buttons">
+      <button id="create">Create</button>
+      <div class="button">
+        <button id="delete">Delete</button><button id="show">Show</button>
+      </div>
+      <div class="button">
+        <button id="pin">Pin</button><button id="unpin">Unpin</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+~function () {
+
+var $ = function () {
+  return document.querySelector.apply(document, arguments);
+}
+var $$ = function () {
+  return document.querySelectorAll.apply(document, arguments);
+}
+
+var prefix = 'hex.extensions.hex_shortcut_extension.';
+
+function GetBaseName (filename) {
+  return (navigator.platform.toLowerCase() == 'win32')
+      ? filename.substr(filename.lastIndexOf('\\') + 1)
+          : filename.substr(filename.lastIndexOf('/') + 1);
+}
+
+function GetDirectoryName (filename) {
+  return (navigator.platform.toLowerCase() == 'win32')
+      ? filename.substr(0, filename.lastIndexOf('\\'))
+          : filename.substr(0, filename.lastIndexOf('/'));
+}
+
+function update (id) {
+  $('#params').value = GetParameters(id);
+}
+
+Array.prototype.slice.call($$('input[type=file]')).forEach(function (e, i) {
+  e.addEventListener('change', function () {
+    var input = this.previousElementSibling;
+    if (!input) {
+      update('create');
+      return;
+    }
+    input.value = this.value.toString();
+    if (input.id == 's_path') {
+      input.value = this.value.toString() + ((navigator.platform.toLowerCase() == 'win32') ? '\\' : '/');
+      if ($('#s_target').value != '') {
+        input.value += GetBaseName($('#s_target').value);
+      }
+    }
+    if (input.id == 's_target') {
+      if ($('#s_path').value == '') {
+        $('#s_path').value = this.value + '.lnk';
+      }
+      if ($('#s_wd').value == '') {
+        $('#s_wd').value = GetDirectoryName(this.value);
+      }
+    }
+    update('create');
+  }, false);
+});
+Array.prototype.slice.call($$('.parameter > input[type=text][id], .parameter > input[type=number][id]')).forEach(function (e, i) {
+  e.addEventListener('input', function () {
+    var input = this.previousElementSibling;
+    if (!input) {
+      update('create');
+      return;
+    }
+    update('create');
+  }, false);
+});
+
+Array.prototype.slice.call($$('.buttons button')).forEach(function (e, i) { 
+  e.addEventListener('mouseover', function () {
+    if (this.id != 'show')
+      update(this.id);
+  }, false);
+  e.addEventListener('click', function () {
+    if (this.id != 'show')
+      window.eval($('#params').value);
+    else
+      hex.showTargetInFolder($('#s_path').value);
+  }, false);
+});
+
+function GetShortcutPath () {
+  var path = $('#s_path').value;
+  if (navigator.platform.toLowerCase() == 'win32') {
+    path = path.replace(/\\/ig, '\\\\');
+    console.log(path);
+  }
+  if (path.substr(-4).toLowerCase() != '.lnk') {
+    path += '.lnk';
+  }
+  return path;
+}
+
+function GetParameters (id) {
+  var code = prefix + id + '(';
+  if (id == 'create') {
+    code += '"' + GetShortcutPath() + '", ';
+    var args = {
+      target: $('#s_target').value,
+      workingDir: $('#s_wd').value,
+      arguments: $('#s_args').value,
+      description: $('#s_desc').value,
+      iconPath: $('#s_icon_path').value,
+      iconIndex: $('#s_icon_index').value | 0,
+    };
+    code += JSON.stringify(args, null, 2);
+  } else {
+    code += '"' + GetShortcutPath() + '"';
+  }
+  code += ');';
+  return code;
+}
+
+document.addEventListener('mousemove', function (e) {
+  if (e.target.tagName.toLowerCase() == 'h1') {
+    hex.setAsTitleBarAreas(e.clientX, e.clientY);
+    e.stopPropagation();
+  } else {
+    hex.setAsTitleBarAreas(-1, -1);
+    hex.setAsNonBorderAreas(-1, -1);
+  }
+}, false);
+
+document.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+}, false);
+
+}();
+</script>
+</body>
+</html>

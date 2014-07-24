@@ -1,0 +1,318 @@
+<!-- Copyright (c) 2014 NetEase Youdao Inc. and other heX contributors. All
+     rights reserved. Use of this source code is governed by a BSD-style license
+     that can be found in the LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Icon Extension Test</title>
+<style>
+.frame {
+  background:#cacaca;
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+.selectiondiv {
+  border:2px solid white;
+  background:#1B94E0;
+  opacity:0.4;
+  filter:alpha(opacity=40);
+  margin:0px;
+  padding:0px;
+  display:none;
+  position: fixed;
+}
+* {
+  font-family: 'Trebuchet MS';
+  outline: none;
+  -webkit-user-select: none;
+}
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+h1 {
+  -webkit-user-select: none;
+  padding: 0.5em 20%;
+  background-color: rgba(140, 140, 140, .8);
+  margin: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+.parameter {
+  margin: 0.8em 0;
+  position: relative;
+  background-color: rgba(140, 140, 140, .3);
+}
+h1 + .parameter {
+  margin-top: 90px;
+}
+.parameter > label {
+  display: inline-block;
+  width: 24%;
+  text-align: right;
+  font-weight: bold;
+  font-size: 14px;
+  vertical-align: middle;
+}
+#spinner {
+  width: 32px;
+  height: 32px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.preview {
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
+}
+#preview {
+  vertical-align: middle;
+}
+input {
+  width: 300px;
+}
+button {
+  width: 50px;
+}
+</style>
+<script src="js/jquery.js"></script>
+<script src="js/spinners.js"></script>
+</head>
+<body onmousedown="return false">
+<div id="selection" class="selectiondiv"></div>
+<h1>Icon Extension Test</h1>
+<div class="parameter">
+  <label>Get Icon: </label>
+  <button id="get_icon">Get</button>
+  <input type="text" id="get_icon_value" class="no_selection" />
+  <canvas id="get_icon_canvas" class="preview" width="32" height="32"></canvas>
+</div>
+<div class="parameter">
+  <label>Set Icon: </label>
+  <button id="set_icon">Set</button>
+  <input type="text" id="set_icon_value" class="no_selection" />
+  <canvas id="set_icon_canvas" class="preview" width="32" height="32"></canvas>
+</div>
+<div class="parameter">
+  <label>Animation Icon: </label>
+  <button id="ani">Test</button>
+  <button id="ani_stop">Stop</button>
+  <div id="spinner"></div>
+</div>
+<div class="parameter">
+  <label>Create Icon File: </label>
+  <button id="create_icon">Create</button>
+  <input type="file" id="create_icon_file" class="no_selection" hexsavefile hexreserved hexcustom />
+</div>
+<div class="parameter">
+  <label>Get File Icon: </label>
+  <button id="get_file_icon">Get</button>
+  <input type="file" id="get_file_icon_file" class="no_selection" hexreserved hexcustom />
+  <img id="get_file_icon_img" class="preview" width="32" height="32" />
+</div>
+<div class="parameter">
+  <label>Preview: </label>
+  <canvas id="preview"></canvas>
+</div>
+
+<script>
+var interval = 0;
+
+$(function () {
+
+// Click coordinates
+var x1, x2, y1, y2;
+
+//Variable indicates wether a mousedown event within your selection happend or not
+var selection = false;
+var rect = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+var canSelect = false;
+
+// Global mouse button variables
+var gMOUSEUP = false;
+var gMOUSEDOWN = false;
+
+// Global Events if left mousebutton is pressed or nor (usability fix)
+$(document).mouseup(function() {
+  gMOUSEUP = true;
+  gMOUSEDOWN = false;
+});
+$(document).mousedown(function() {
+  gMOUSEUP = false;
+  gMOUSEDOWN = true;
+});
+
+// Selection frame (playground :D)
+$("body").mousedown(function(e) {
+  selection = true;
+  // store mouseX and mouseY
+  x1 = e.pageX - this.offsetLeft;
+  y1 = e.pageY - this.offsetTop;
+});
+
+$('.no_selection, button, input').mousedown(function (e) {
+  e.stopPropagation();
+}).mouseup(function (e) {
+  e.stopPropagation();
+});
+
+// If selection is true (mousedown on selection frame) the mousemove 
+// event will draw the selection div
+$('body').mousemove(function(e) {
+  if (selection) {
+    canSelect = true;
+    // Store current mouseposition
+    x2 = e.pageX - this.offsetLeft;
+    y2 = e.pageY - this.offsetTop;
+
+    // Prevent the selection div to get outside of your frame
+    (x2 < 0) ? selection = false : ($(this).width() < x2) ? selection = false : (y2 < 0) ? selection = false : ($(this).height() < y2) ? selection = false : selection = true;;
+
+    // If the mouse is inside your frame resize the selection div
+    if (selection) {
+      // Calculate the div selection rectancle for positive and negative values
+      var TOP = (y1 < y2) ? y1 : y2;
+      var LEFT = (x1 < x2) ? x1 : x2;
+      var WIDTH = (x1 < x2) ? x2 - x1 : x1 - x2;
+      var HEIGHT = (y1 < y2) ? y2 - y1 : y1 - y2;
+
+      // Use CSS to place your selection div
+      $("#selection").css({
+        position: 'fixed',
+        zIndex: 5000,
+        left: LEFT,
+        top: TOP,
+        width: WIDTH,
+        height: HEIGHT
+      });
+      $("#selection").show();
+
+      // Info output
+      rect = { left: LEFT, top: TOP, right: WIDTH + LEFT, bottom: HEIGHT + TOP };
+    }
+  }
+});
+// Selection complete, hide the selection div (or fade it out)
+$('body').mouseup(function(e) {
+  if (canSelect)
+    hex.snapshot(rect, function (success, width, height, base64, array) {
+      if (!success) return;
+      $('#set_icon_value').val(base64);
+      DrawArrayOnCanvas(array, $('#set_icon_canvas')[0], width, height);
+    });
+  canSelect = false;
+  selection = false;
+  $("#selection").hide();
+});
+// Usability fix. If mouse leaves the selection and enters the selection frame again with mousedown
+$("body").mouseenter(function() {
+  (gMOUSEDOWN) ? selection = true : selection = false;
+});
+// Usability fix. If mouse leaves the selection and enters the selection div again with mousedown
+$("#selection").mouseenter(function() {
+  (gMOUSEDOWN) ? selection = true : selection = false;
+});
+// Set selection to false, to prevent further selection outside of your selection frame
+$('body').mouseleave(function() {
+  selection = false;
+});
+
+var spinner = Spinners.create('#spinner', {
+  radius: 7,
+  height: 4,
+  width: 4,
+  dashes: 22,
+  opacity: 0.61,
+  padding: 4,
+  rotation: 1250,
+  color: '#336699'
+}).play();
+
+var icon = hex.extensions.hex_icon_extension;
+
+function DrawArrayOnCanvas (array, canvas, width, height, resize) {
+  if (resize) {
+    canvas.style.width = '256px';
+    canvas.style.height = '256px';
+  }
+  canvas.width = width;
+  canvas.height = height;
+  var ctx = canvas.getContext('2d');
+  var imageData = ctx.createImageData(width, height);
+  imageData.data.set(array);
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function GetArrayFromCanvas (canvas) {
+  var ctx = canvas.getContext('2d');
+  var width = canvas.width;
+  var height = canvas.height;
+  var imageData = ctx.getImageData(0, 0, width, height);
+  return imageData.data;
+}
+
+$('canvas.preview').mouseover(function (e) {
+  var preview = $('#preview');
+  DrawArrayOnCanvas(GetArrayFromCanvas(this), preview[0], this.width, this.height, true);
+}).mouseout(function (e) {
+  var preview = $('#preview');
+  var ctx = preview[0].getContext('2d');
+  var width = preview.attr('width');
+  var height = preview.attr('height');
+  ctx.clearRect(0, 0, width, height);
+});
+
+$('#get_icon').click(function (e) {
+  var iconRes = icon.getIcon();
+  $('#get_icon_value').val(iconRes.base64);
+  DrawArrayOnCanvas(iconRes.array, $('#get_icon_canvas')[0], iconRes.width, iconRes.height);
+});
+
+$('#set_icon').click(function (e) {
+  $('#ani')[0].disabled = false;
+  clearInterval(interval);
+  var width = $('#set_icon_canvas').attr('width') | 0;
+  var height = $('#set_icon_canvas').attr('height') | 0;
+  icon.setIcon(GetArrayFromCanvas($('#set_icon_canvas')[0]), width, height);
+});
+
+$('#ani').click(function (e) {
+  this.disabled = true;
+  interval = setInterval(function () {
+    icon.setIcon(GetArrayFromCanvas($('#spinner > canvas')[0]));
+  }, 40);
+});
+
+$('#ani_stop').click(function (e) {
+  $('#ani')[0].disabled = false;
+  clearInterval(interval);
+});
+
+$('#create_icon').click(function (e) {
+  var width = $('#set_icon_canvas').attr('width') | 0;
+  var height = $('#set_icon_canvas').attr('height') | 0;
+  icon.createIconFile($('#create_icon_file')[0].hexfiletypepathvalue, GetArrayFromCanvas($('#set_icon_canvas')[0]), width, height);
+});
+
+$('#get_file_icon').click(function (e) {
+  var iconRes = icon.getIconFromFile($('#get_file_icon_file')[0].hexfiletypepathvalue, icon.LARGE);
+  $('#get_file_icon_img').attr('src', iconRes.base64);
+});
+
+$(document).bind('contextmenu', function (e) {
+  e.preventDefault();
+});
+
+});
+</script>
+</body>
+</html>

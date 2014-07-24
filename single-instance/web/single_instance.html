@@ -1,0 +1,225 @@
+<!-- Copyright (c) 2014 NetEase Youdao Inc. and other heX contributors. All
+     rights reserved. Use of this source code is governed by a BSD-style license
+     that can be found in the LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Single Instance Test</title>
+<style>
+* {
+  font-family: 'Trebuchet MS';
+  outline: none;
+}
+html, body {
+  margin: 0;
+  height: 100%;
+}
+h1 {
+  -webkit-user-select: none;
+  padding: 0.5em 20%;
+  margin: 0;
+  background-color: rgba(140, 140, 140, .8);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  white-space: nowrap;
+  cursor: default;
+}
+h2 > div {
+  background-color: rgba(140, 140, 140, .8);
+  padding: 0.2em 20%;
+  pointer-events: none;
+}
+.parameter {
+  margin: 0.8em 0;
+  position: relative;
+  background-color: rgba(140, 140, 140, .3);
+}
+h2 {
+  -webkit-user-select: none;
+  margin: 0;
+  white-space: nowrap;
+  cursor: default;
+}
+h1 + * {
+  padding-top: 90px;
+}
+input {
+  box-sizing: border-box;
+}
+.parameter > label {
+  display: inline-block;
+  width: 16%;
+  text-align: right;
+  font-weight: bold;
+  font-size: 14px;
+}
+.parameter > span {
+  margin-right: 1em;
+}
+.parameter > input[type=file] {
+  height: 24px;
+  vertical-align: middle;
+  width: 50%;
+}
+.parameter > button[id] {
+  height: 24px;
+  vertical-align: middle;
+  width: 15%;
+}
+#target, #args {
+  height: 24px;
+  vertical-align: middle;
+  width: 80%;
+}
+#execute {
+  position: absolute;
+  right: 4%;
+  top: -44px;
+  width: 20%;
+}
+.parameter input[type=radio] {
+  background-color: transparent;
+}
+.ak {
+  text-decoration: underline;
+}
+#args_p {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.parameter > ul {
+  display: inline-block;
+  width: 80%;
+  height: 100%;
+  font-family: 'Courier New';
+  font-size: 14px;
+  vertical-align: middle;
+  box-sizing: border-box;
+  overflow: auto;
+  margin: 0;
+}
+</style>
+</head>
+<body>
+<h1>Single Instance Test</h1>
+<h2><div>Create Shortcut</div></h2>
+<div class="parameter">
+  <label>Shortcut path: </label>
+  <input type="file" hexreserved="hexreserved" hexfiletypebuttonvalue="..." webkitdirectory id="file" /><button id="create">Create</button><button id="show">Show</button>
+</div>
+<div class="parameter">
+  <label>Target: </label>
+  <input type="text" readonly id="target" />
+</div>
+<div class="parameter">
+  <label>Arguments: </label>
+  <input type="text" id="args" />
+</div>
+
+<h2><div>Intances Arguments</div></h2>
+<div class="parameter" id="args_p">
+  <label>Arguments: </label><button id="execute">Execute</button>
+  <ul id="inst_args">
+  </ul>
+</div>
+
+<script>
+'use strict';
+
+~function () {
+
+var $ = function () {
+  return document.querySelector.apply(document, arguments);
+}
+var $$ = function () {
+  return document.querySelectorAll.apply(document, arguments);
+}
+
+function updateListHeight () {
+  $('#args_p').style.top = $('#args_p').previousElementSibling.getBoundingClientRect().bottom + 'px';
+}
+
+window.addEventListener('resize', function(e) {
+  updateListHeight();
+}, false);
+
+window.addEventListener('load', function(e) {
+  updateListHeight();
+}, false);
+
+$('#target').value = process.execPath;
+$('#file').hexfiletypepathvalue = GetDirectoryName($('#target').value);
+
+window.addEventListener('instanceCreated', function (e) {
+  var li = document.createElement('li');
+  li.innerHTML = Date() + ' -> ' + $('#target').value + ' ' + e.detail;
+  $('#inst_args').appendChild(li);
+}, false);
+
+document.addEventListener('mousemove', function (e) {
+  if (e.target.tagName.toLowerCase() == 'h1' ||
+      e.target.tagName.toLowerCase() == 'h2') {
+    hex.setAsTitleBarAreas(e.clientX, e.clientY);
+    e.stopPropagation();
+  } else {
+    hex.setAsTitleBarAreas(-1, -1);
+    hex.setAsNonBorderAreas(-1, -1);
+  }
+}, false);
+
+document.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+}, false);
+
+function GetBaseName (filename) {
+  return (navigator.platform.toLowerCase() == 'win32')
+      ? filename.substr(filename.lastIndexOf('\\') + 1)
+          : filename.substr(filename.lastIndexOf('/') + 1);
+}
+
+function GetDirectoryName (filename) {
+  return (navigator.platform.toLowerCase() == 'win32')
+      ? filename.substr(0, filename.lastIndexOf('\\'))
+          : filename.substr(0, filename.lastIndexOf('/'));
+}
+
+function GetShortcutFileName () {
+  if ($('#file').value != '')
+    return $('#file').value + ((navigator.platform.toLowerCase() == 'win32') ? '\\' : '/') + GetBaseName($('#target').value) + '.lnk';
+  return $('#target').value + '.lnk';
+}
+
+$('#create').addEventListener('click', function(e) {
+  if ($('#args').value == '') {
+    $('#args').value = '--' + (new Date()).valueOf();
+  }
+  hex.extensions.hex_shortcut_extension.create(GetShortcutFileName(), {
+    target: $('#target').value,
+    arguments: $('#args').value,
+    workingDir: GetDirectoryName($('#target').value)
+  });
+}, false);
+
+$('#show').addEventListener('click', function(e) {
+  hex.showTargetInFolder(GetShortcutFileName());
+}, false);
+
+$('#execute').addEventListener('click', function(e) {
+  hex.openExternal(GetShortcutFileName());
+}, false);
+
+$('#file').addEventListener('change', function(e) {
+  $('#file')
+}, false);
+
+}();
+</script>
+</body>
+</html>

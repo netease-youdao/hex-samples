@@ -1,0 +1,203 @@
+<!-- Copyright (c) 2014 NetEase Youdao Inc. and other heX contributors. All
+     rights reserved. Use of this source code is governed by a BSD-style license
+     that can be found in the LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>INPUT Element Test</title>
+<style>
+* {
+  font-family: 'Trebuchet MS';
+  outline: none;
+}
+body {
+  margin: 0;
+}
+h1 {
+  -webkit-user-select: none;
+  padding: 0.5em 20%;
+  background-color: rgba(140, 140, 140, .8);
+  margin: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  white-space: nowrap;
+  cursor: default;
+}
+h2 {
+  -webkit-user-select: none;
+  padding: 0.2em 20%;
+  background-color: rgba(140, 140, 140, .8);
+  margin: 0;
+  white-space: nowrap;
+  cursor: default;
+}
+.parameter {
+  margin: 0.8em 0;
+  position: relative;
+  background-color: rgba(140, 140, 140, .3);
+}
+h1 + * {
+  margin-top: 90px;
+}
+.parameter > label {
+  display: inline-block;
+  width: 16%;
+  text-align: right;
+  font-weight: bold;
+  font-size: 14px;
+}
+.parameter > span {
+  margin-right: 1em;
+}
+.parameter input[type=text] {
+  height: 24px;
+  vertical-align: middle;
+}
+.parameter input[type=radio] {
+  background-color: transparent;
+}
+.ak {
+  text-decoration: underline;
+}
+.parameter > .preview_wrapper, #text, #preview {
+  width: 70%;
+  display: inline-block;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+.parameter > .preview_wrapper > textarea {
+  resize: none;
+  height: 80px;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  vertical-align: top;
+  font-family: 'Courier New';
+}
+#color_selector {
+  width: 100px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+  box-sizing: border-box;
+}
+#color_value {
+  width: -webkit-calc(70% - 105px);
+  display: inline-block;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+</style>
+</head>
+<body>
+<h1>INPUT Element Test</h1>
+<h2>INPUT[type=file]</h2>
+<div class="parameter">
+  <label id="type">Input type: </label>
+  <span><input type="radio" name="type" id="di" accesskey="d" checked /><label for="di"><span class="ak">D</span>efault</label></span>
+  <span><input type="radio" name="type" id="mi" accesskey="m" /><label for="mi"><span class="ak">M</span>ultiple File</label></span>
+  <span><input type="radio" name="type" id="fi" accesskey="f" /><label for="fi"><span class="ak">F</span>older</label></span>
+</div>
+<div class="parameter">
+  <label id="canceled">When canceled: </label>
+  <span><input type="checkbox" name="reserved" id="reserved" accesskey="r" checked /><label for="reserved"><span class="ak">R</span>eserve last value</label></span>
+</div>
+<div class="parameter">
+  <label id="text_value"><span class="ak">T</span>ext value: </label>
+  <span><input type="text" name="text" id="text" accesskey="t" checked /></span>
+</div>
+<div class="parameter">
+  <label for="preview" >Preview: </label>
+  <span><input type="file" id="preview" hexreserved="hexreserved" /></span>
+</div>
+<div class="parameter">
+  <label for="code">Code: </label>
+  <div class="preview_wrapper">
+    <textarea type="text" id="code" name="code" readonly></textarea>
+  </div>
+</div>
+
+<h2>INPUT[type=color]</h2>
+<div class="parameter">
+  <label id="color" for="color_selector"><span class="ak">C</span>olor selector: </label>
+  <span><input type="color" name="type" id="color_selector" value="#42A95E" /><input type="text" id="color_value" value="#336699" accesskey="c" /><label for="color_value"></span>
+</div>
+
+<script>
+'use strict';
+
+~function () {
+
+var $ = function () {
+  return document.querySelector.apply(document, arguments);
+}
+var $$ = function () {
+  return document.querySelectorAll.apply(document, arguments);
+}
+
+$('#color_selector').addEventListener('change', function () {
+  $('#color_value').value = this.value;
+}, false);
+$('#color_value').addEventListener('input', function () {
+  $('#color_selector').value = this.value;
+}, false);
+
+$('#text').addEventListener('input', function () {
+  if (this.value == '')
+    $('#preview').removeAttribute('hexfiletypebuttonvalue');
+  else
+    $('#preview').setAttribute('hexfiletypebuttonvalue', this.value);
+  update();
+}, false);
+$('#reserved').addEventListener('click', function () {console.log(this);
+  if (this.checked)
+    $('#preview').setAttribute('hexreserved', 'hexreserved');
+  else
+    $('#preview').removeAttribute('hexreserved');
+}, false);
+Array.prototype.slice.call($$('input[name=type]')).forEach(function (e, i) {
+  e.addEventListener('click', function () {
+    if (this.id == 'mi')
+      $('#preview').setAttribute('multiple', 'multiple');
+    else
+      $('#preview').removeAttribute('multiple');
+    if (this.id == 'fi')
+      $('#preview').setAttribute('webkitdirectory', 'webkitdirectory');
+    else
+      $('#preview').removeAttribute('webkitdirectory');
+  }, false);
+});
+$('#preview').addEventListener('DOMSubtreeModified', function () {
+  update();
+}, false);
+
+update();
+
+function update () {
+  $('#code').value = $('#preview').outerHTML;
+}
+
+document.addEventListener('mousemove', function (e) {
+  if (e.target.tagName.toLowerCase() == 'h1' ||
+      e.target.tagName.toLowerCase() == 'h2') {
+    hex.setAsTitleBarAreas(e.clientX, e.clientY);
+    e.stopPropagation();
+  } else {
+    hex.setAsTitleBarAreas(-1, -1);
+    hex.setAsNonBorderAreas(-1, -1);
+  }
+}, false);
+
+document.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+}, false);
+
+}();
+</script>
+</body>
+</html>

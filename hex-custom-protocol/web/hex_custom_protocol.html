@@ -1,0 +1,152 @@
+<!-- Copyright (c) 2014 NetEase Youdao Inc. and other heX contributors. All
+     rights reserved. Use of this source code is governed by a BSD-style license
+     that can be found in the LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Custom Protocol Extension Test</title>
+<style>
+* {
+  font-family: 'Trebuchet MS';
+  outline: none;
+  -webkit-user-select: none;
+}
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+h1 {
+  -webkit-user-select: none;
+  padding: 0.5em 20%;
+  background-color: rgba(140, 140, 140, .8);
+  margin: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  cursor: default;
+}
+.parameter {
+  margin: 0.8em 0;
+  position: relative;
+  background-color: rgba(140, 140, 140, .3);
+}
+h1 + .parameter {
+  margin-top: 90px;
+}
+.parameter > label {
+  display: inline-block;
+  width: 24%;
+  text-align: right;
+  font-weight: bold;
+  font-size: 14px;
+  vertical-align: middle;
+}
+input {
+  width: 300px;
+}
+button {
+  width: 70px;
+}
+#console {
+  display: inline-block;
+  vertical-align: middle;
+  width: 70%;
+  max-height: 120px;
+  overflow: auto;
+}
+</style>
+<script src="js/jquery.js"></script>
+</head>
+<body>
+<h1>Custom Protocol Extension Test</h1>
+<div class="parameter">
+  <label>Protocol Name: </label>
+  <input type="text" id="protocol_name" />
+</div>
+<div class="parameter">
+  <label>Shell Path: </label>
+  <input type="file" id="shell_path" hexcustom hexreserved />
+</div>
+<div class="parameter">
+  <label>Test Path: </label>
+  <input type="text" id="test_path" />
+</div>
+<div class="parameter">
+  <label>Operations: </label>
+  <button id="create">Create</button>
+  <button id="has">Has</button>
+  <button id="delete">Delete</button>
+  <button id="test">Test</button>
+</div>
+<div class="parameter">
+  <label>Console: </label>
+  <p id="console"></p>
+</div>
+
+<script>
+$(function () {
+
+var cp = hex.extensions.hex_custom_protocol_extension;
+
+var name = $('#protocol_name').val();
+var path = $('#shell_path')[0].hexfiletypepathvalue;
+var test = $('#test_path').val();
+
+function consolelog (log, operation) {
+  var c = $('#console');
+  c.html(c.html() + operation + ': ' + log + '<br />');
+  c[0].scrollTop = c[0].scrollHeight;
+}
+
+$('#protocol_name').change(function (e) {
+  name = $(this).val() || '';
+});
+$('#shell_path').change(function (e) {
+  path = $('#shell_path')[0].hexfiletypepathvalue || '';
+});
+$('#test_path').change(function (e) {
+  test = $(this).val() || '';
+});
+
+$('#test').click(function (e) {
+  if (name)
+    hex.openExternal(name + '://' + test);
+});
+
+$('#create').click(function (e) {
+  if (name && path && !cp.has(name))
+    consolelog(cp.create(name, path), this.id);
+});
+
+$('#delete').click(function (e) {
+  if (name && cp.has(name))
+    consolelog(cp.delete(name), this.id);
+});
+
+$('#has').click(function (e) {
+  consolelog(cp.has(name), this.id);
+});
+
+$(document).mousemove(function (e) {
+  if (e.target.tagName.toLowerCase() == 'h1') {
+    hex.setAsTitleBarAreas(e.clientX, e.clientY);
+    e.stopPropagation();
+  } else {
+    hex.setAsTitleBarAreas(-1, -1);
+    hex.setAsNonBorderAreas(-1, -1);
+  }
+});
+
+$(document).bind('contextmenu', function (e) {
+  e.preventDefault();
+});
+
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!-- Copyright (c) 2014 NetEase Youdao Inc. and other heX contributors. All
+     rights reserved. Use of this source code is governed by a BSD-style license
+     that can be found in the LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Snapshot Test</title>
+<style>
+* {
+  font-family: 'Trebuchet MS';
+  outline: none;
+}
+body {
+  margin: 0;
+  -webkit-transform: none;
+}
+h1 {
+  -webkit-user-select: none;
+  padding: 0.5em 20%;
+  background-color: rgba(140, 140, 140, .8);
+  margin: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+.parameter {
+  margin: 0.8em 0;
+  position: relative;
+  background-color: rgba(140, 140, 140, .3);
+}
+h1 + .parameter {
+  margin-top: 90px;
+}
+.parameter > label {
+  display: inline-block;
+  width: 26%;
+  text-align: right;
+  font-weight: bold;
+  font-size: 14px;
+}
+.parameter > span {
+  margin-right: 1em;
+}
+.parameter input {
+  height: 24px;
+  vertical-align: middle;
+  border: 1px solid rgb(50, 50, 50);
+}
+.parameter input[type=checkbox] {
+  height: auto;
+  line-height: 24px;
+}
+input[type=radio], input[type=checkbox] {
+  background-color: transparent;
+}
+.ak {
+  text-decoration: underline;
+}
+.parameter input[type=number] {
+  width: 70px;
+  padding: 3px;
+  box-sizing: border-box;
+}
+.parameter > .execute_wrapper {
+  width: 70%;
+  display: inline-block;
+  vertical-align: middle;
+}
+.parameter > .execute_wrapper > textarea {
+  border: 1px solid rgb(50, 50, 50);
+  resize: none;
+  height: 250px;
+  margin: 0;
+  width: 80%;
+  box-sizing: border-box;
+  vertical-align: top;
+  font-family: 'Courier New';
+  font-size: 12px;
+}
+#snapshot {
+  width: 18%;
+  height: 250px;
+  float: right;
+  font-weight: bold;
+  font-size: 1em;
+}
+input[type=number]:invalid { background-color: cyan; }
+#preview {
+  -webkit-blur: none !important;
+  position: fixed;
+  left: 50px;
+  top: 50px;
+  right: 50px;
+  bottom: 50px;
+  overflow: scroll;
+  border:1px solid #d3d3d3;
+  z-index:10000000;
+  display: none;
+}
+#bgcolor {
+  width: 100px;
+}
+.close {
+  color:  #f2f2f2;
+  background: linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,0)), radial-gradient(#f2f2f2, #ccc);
+  border-radius: 50px;
+  box-shadow: inset 0 1px 1px rgba(191,191,191,.75), 0 2px 1px rgba(0,0,0,.25);
+  text-shadow: 0 1px 0 rgba(255,255,255,.5);
+  border: 2px solid #e6e6e6;
+  color: #b3b3b3;
+  float: right;
+  height: 23px;
+  width: 23px;
+  text-indent: -9999px;
+  position: fixed;
+  left: 38px;
+  top: 38px;
+  text-decoration: none;
+  z-index:2000000000;
+  display: none;
+}
+.close::after {
+  content: "\2716";
+  text-indent: 0;
+  display: block;
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  font-size: 12px;
+}
+
+.close:hover {
+  color: #e6e6e6;
+  background: linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,0)), radial-gradient(#b3b3b3, #8c8c8c);
+  text-shadow: 0 -1px 0 rgba(153,153,153,.5);
+  cursor: pointer;
+}
+
+.close:active {
+  color: #e6e6e6;
+  background: linear-gradient(rgba(255,255,255,.15), rgba(255,255,255,0)), radial-gradient(#8c8c8c, #808080);
+  text-shadow: 0 -1px 0 rgba(26,26,26,.5);
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+<h1>Snapshot Test</h1>
+<div class="parameter">
+  <label id="mode" data-mode="0">Snapshot Mode: </label>
+  <span><input type="radio" name="mode" id="sbrv" accesskey="r" data-mode="0" checked /><label for="sbrv">Browser <span class="ak">R</span>ender View</label></span>
+  <span><input type="radio" name="mode" id="swd" accesskey="d" data-mode="1" /><label for="swd">Whole <span class="ak">D</span>esktop</label></span>
+</div>
+<div class="parameter">
+  <label id="rect">Snapshot Rectangle: </label>
+  <span><input type="checkbox" name="whole" id="whole_rect" accesskey="w" checked /><label for="whole_rect"><span class="ak">W</span>hole Rectangle</label></span>
+  <input type="number" name="left" id="left" placeholder="Left" disabled />
+  <input type="number" name="top" id="top" placeholder="Top" disabled />
+  <input type="number" name="right" id="right" placeholder="Right" disabled />
+  <input type="number" name="bottom" id="bottom" placeholder="Bottom" disabled />
+</div>
+<div class="parameter">
+  <label for="params" accesskey="p"><span class="ak">S</span>cript: </label>
+  <div class="execute_wrapper">
+    <textarea id="params" name="params" readonly></textarea>
+    <button id="snapshot">Run Snapshot</button>
+  </div>
+</div>
+<div class="parameter">
+  <label for=""><span class="ak">B</span>ackground Color for Snapshot <b>Browser Render View</b>: </label>
+  <input type="color" id="bgcolor" value="#ffffff" />
+  <span><input type="checkbox" id="transparent_bg" /><label for="transparent_bg" accesskey="t"><span class="ak">T</span>ransparent</label></span>
+</div>
+<button class="close" id="close">Close</button>
+<div id="preview"></div>
+
+<script>
+document.querySelector('#whole_rect').addEventListener('click', function () {
+  var This = this;
+  Array.prototype.slice.call(document.querySelectorAll('.parameter > input[type=number][placeholder]')).forEach(function (e, i) {
+    e.disabled = This.checked;
+  });
+  updateParameters();
+}, false);
+
+document.querySelector('#transparent_bg').addEventListener('click', function () {
+  document.querySelector('#bgcolor').disabled = this.checked;
+}, false);
+
+Array.prototype.slice.call(document.querySelectorAll('#preview, #close')).forEach(function (e, i, a) {
+  e.addEventListener('click', function () {
+    Array.prototype.slice.call(document.querySelectorAll('body > *')).forEach(function (e, i, a) {
+      if (e.id != 'preview' && e.id != 'close')
+         e.style.WebkitFilter = 'none';
+         e.style.pointerEvents = 'auto';
+    });
+    a.forEach(function (e) {
+      e.style.display = 'none';
+    });
+  }, false);
+});
+
+Array.prototype.slice.call(document.querySelectorAll('.parameter > input[type=number][placeholder]')).forEach(function (e, i) {
+  e.addEventListener('input', function () {
+    updateParameters();
+  }, false);
+});
+
+Array.prototype.slice.call(document.querySelectorAll('input[name=mode]')).forEach(function (e, i) {
+  e.addEventListener('click', function () {
+    document.querySelector('#mode').dataset.mode = e.dataset.mode;
+    document.querySelector('#bgcolor').disabled = e.dataset.mode != 0;
+    document.querySelector('#transparent_bg').disabled = e.dataset.mode != 0;
+    updateParameters();
+  }, false);
+});
+
+function updateParameters () {
+  var mode = document.querySelector('#mode').dataset.mode | 0;
+  var modes = ['hex.snapshot', 'hex.snapshotDesktop'];
+  var rects = ['[0, 0, window.innerWidth, window.innerHeight]', 'hex.screen.fullRect'];
+  var rect = [
+    document.querySelector('#left').value | 0,
+    document.querySelector('#top').value | 0,
+    document.querySelector('#right').value | 0,
+    document.querySelector('#bottom').value | 0,
+  ];
+  var r = (document.querySelector('#whole_rect').checked) ? rects[mode] : '[' + rect.toString() + ']';
+  var str = modes[mode] + '(' + r + ', ';
+  switch (mode) {
+    case 0:
+      str += '\n    function (success, width, height, uri, array) {\n';
+      str += '  if (!success) return;\n';
+      str += '  var canvas = document.createElement("canvas");\n';
+      str += '  canvas.width = width;\n';
+      str += '  canvas.height = height;\n';
+      str += '  var ctx = canvas.getContext("2d");\n';
+      str += '  var imageData = ctx.createImageData(width, height);\n';
+      str += '  imageData.data.set(array);\n';
+      str += '  ctx.putImageData(imageData, 0, 0);\n';
+      str += '  document.querySelector("#preview").appendChild(canvas);\n';
+      str += '  document.querySelector("#preview").style.display = "block";\n';
+      str += '});';
+      break;
+    case 1:
+      str += '\n    function (success, width, height, uri, array) {\n';
+      str += '  if (!success) return;\n';
+      str += '  var img = new Image;\n';
+      str += '  img.src = uri;\n';
+      str += '  document.querySelector("#preview").appendChild(img);\n';
+      str += '  document.querySelector("#preview").style.display = "block";\n';
+      str += '});';
+      break;
+  }
+  document.querySelector('#params').value = str;
+}
+
+document.querySelector('#snapshot').addEventListener('click', function () {
+  document.querySelector('#preview').style.backgroundColor = document.querySelector('#transparent_bg').checked ? 'rgba(0,0,0,0.5)' : document.querySelector('#bgcolor').value;
+  document.querySelector("#preview").innerHTML = '';
+  var blur = "Array.prototype.slice.call(document.querySelectorAll('body > *')).forEach(function (e, i) { if (e.id != 'preview' && e.id !='close') { e.style.WebkitFilter = 'blur(4px)'; e.style.pointerEvents = 'none'; } });document.querySelector('.close').style.display='block';";
+  window.eval(document.querySelector('#params').value.replace(/(function \(.*?\) \{)/, '$1' + blur));
+}, false);
+
+document.addEventListener('mousemove', function (e) {
+  if (e.target.tagName.toLowerCase() == 'h1') {
+    hex.setAsTitleBarAreas(e.clientX, e.clientY);
+    e.stopPropagation();
+  } else {
+    hex.setAsTitleBarAreas(-1, -1);
+    hex.setAsNonBorderAreas(-1, -1);
+  }
+}, false);
+
+document.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+}, false);
+
+updateParameters();
+</script>
+</body>
+</html>

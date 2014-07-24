@@ -1,0 +1,240 @@
+<!-- Copyright (c) 2012-2013 NetEase Youdao Inc. and other heX contributors. All
+     rights reserved. Use of this source code is governed by a BSD-style license
+     that can be found in the LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Dialog Extension Test</title>
+<style>
+* {
+  font-family: 'Trebuchet MS';
+  outline: none;
+}
+body {
+  margin: 0;
+}
+h1 {
+  -webkit-user-select: none;
+  padding: 0.5em 20%;
+  background-color: rgba(140, 140, 140, .8);
+  margin: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  white-space: nowrap;
+}
+.parameter {
+  margin: 0.8em 0;
+  position: relative;
+  background-color: rgba(140, 140, 140, .3);
+}
+h1 + .parameter {
+  margin-top: 90px;
+}
+.parameter > label {
+  display: inline-block;
+  width: 26%;
+  text-align: right;
+  font-weight: bold;
+  font-size: 14px;
+}
+.parameter > span {
+  margin-right: .2em;
+}
+.parameter input {
+  height: 24px;
+  vertical-align: middle;
+}
+.parameter input[type=radio] {
+  background-color: transparent;
+}
+.parameter input[type=radio] + label {
+  font-size: 13px;
+}
+.ak {
+  text-decoration: underline;
+}
+#title, #defaultfilename {
+  width: 70%;
+  box-sizing: border-box;
+}
+.parameter > table {
+  display: inline-table;
+  background-color: white;
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 70%;
+  vertical-align: middle;
+}
+.parameter > table td:first-child > div {
+  position: absolute;
+  left: 75px;
+  right: 0;
+  top: 1px;
+}
+.parameter > table td:first-child > button {
+  position: absolute;
+  left: 0;
+  top: 1px;
+  height: 22px;
+  width: 70px;
+}
+.parameter > table td, .parameter > table th {
+  border: 1px solid rgb(50, 50, 50);
+  position: relative;
+}
+.parameter > table th button {
+  float: left;
+  height: 22px;
+  padding: 0 2px;
+  height: 22px;
+  width: 70px;
+}
+.parameter > .execute_wrapper {
+  width: 70%;
+  display: inline-block;
+  vertical-align: middle;
+}
+.parameter > .execute_wrapper > textarea {
+  resize: none;
+  height: 150px;
+  margin: 0;
+  width: 80%;
+  box-sizing: border-box;
+  vertical-align: top;
+  font-family: 'Courier New';
+}
+#filedialog {
+  width: 18%;
+  height: 150px;
+  float: right;
+  font-weight: bold;
+  font-size: 1em;
+}
+#return {
+  width: 100%;
+  height: 100px;
+}
+</style>
+</head>
+<body>
+<h1>Dialog Extension Test</h1>
+<div class="parameter">
+  <label id="mode" data-mode="0">Dialog Mode: </label>
+  <span><input type="radio" name="mode" id="of" accesskey="o" data-mode="0" checked /><label for="of"><span class="ak">O</span>pen File</label></span>
+  <span><input type="radio" name="mode" id="omf" accesskey="m" data-mode="1" /><label for="omf">Open <span class="ak">M</span>ultiple File</label></span>
+  <span><input type="radio" name="mode" id="ofld" accesskey="s" data-mode="2" /><label for="ofld">Open <span class="ak">F</span>older</label></span>
+  <span><input type="radio" name="mode" id="onfld" accesskey="n" data-mode="3" /><label for="onfld">Open <span class="ak">N</span>ew Folder</label></span>
+  <span><input type="radio" name="mode" id="sf" accesskey="f" data-mode="4" /><label for="sf"><span class="ak">S</span>ave File</label></span>
+</div>
+<div class="parameter">
+  <label for="title" accesskey="t"><span class="ak">T</span>itle: </label>
+  <input type="text" name="title" id="title" />
+</div>
+<div class="parameter">
+  <label for="defaultfilename" accesskey="d"><span class="ak">D</span>efault File Path or Name: </label>
+  <input type="text" name="defaultfilename" id="defaultfilename" />
+</div>
+<div class="parameter">
+  <label>Accept Types: </label>
+  <table id="types" cellspacing="0">
+    <tr>
+      <th><button accesskey="a" id="append" onclick=""><span class="ak">A</span>ppend</button>Description</th>
+      <th>Type List</th>
+    </tr>
+  </table>
+</div>
+<div class="parameter">
+  <label for="params" accesskey="p"><span class="ak">P</span>arameters: </label>
+  <div class="execute_wrapper">
+    <textarea id="params" name="params" readonly></textarea>
+    <button id="filedialog">Run FileDialog</button>
+  </div>
+</div>
+<div class="parameter">
+  <label for="return" accesskey="r"><span class="ak">R</span>eturn: </label>
+  <div class="execute_wrapper">
+    <textarea id="return" name="return" readonly></textarea>
+  </div>
+</div>
+<script>
+document.querySelector('#append').addEventListener('click', function () {
+  types.insertRow(types.rows.length);
+  types.rows[types.rows.length - 1].insertCell();
+  types.rows[types.rows.length - 1].insertCell();
+  types.rows[types.rows.length - 1].cells[0].innerHTML = '<button id="b' + (types.rows.length - 1) + '">Delete</button><div id="ea' + (types.rows.length - 1) + '" contentEditable="true"></div>';
+  types.rows[types.rows.length - 1].cells[1].innerHTML = '<div id="eb' + (types.rows.length - 1) + '" contentEditable="true"></div>';
+  document.querySelector('#b' + (types.rows.length - 1)).addEventListener('click', function () {
+    types.firstElementChild.removeChild(this.parentElement.parentElement);
+  }, false);
+  document.querySelector('#ea' + (types.rows.length - 1)).addEventListener('input', function () {
+    updateParameters();
+  }, false);
+  document.querySelector('#eb' + (types.rows.length - 1)).addEventListener('input', function () {
+    updateParameters();
+  }, false);
+}, false);
+
+document.querySelector('#title').addEventListener('input', function () {
+  UpdateParameters();
+}, false);
+
+document.querySelector('#defaultfilename').addEventListener('input', function () {
+  updateParameters();
+}, false);
+
+Array.prototype.slice.call(document.querySelectorAll('input[name=mode]')).forEach(function (e, i) {
+  e.addEventListener('click', function () {
+    mode.dataset.mode = e.dataset.mode;
+    updateParameters();
+  }, false);
+});
+
+function genParameters () {
+  var param = {};
+  param.mode = mode.dataset.mode | 0;
+  param.title = document.querySelector('#title').value || '';
+  param.defaultFileName = document.querySelector('#defaultfilename').value || '';
+  param.acceptTypes = {};
+  Array.prototype.slice.call(types.rows).forEach(function (e, i) {
+    if (i == 0)
+      return;
+    param.acceptTypes[e.cells[0].querySelector('div[contentEditable=true]').innerText || ''] = e.cells[1].querySelector('div[contentEditable=true]').innerText || ''
+  });
+  return param;
+}
+
+function updateParameters () {
+  var str = JSON.stringify(genParameters(), null, 4);
+  var modes = ['hex.OPEN_FILE', 'hex.OPEN_MULTIPLE_FILES', 'hex.OPEN_FOLDER', 'hex.OPEN_NEW_FOLDER', 'hex.SAVE_FILE'];
+  var reg = /["mode":\s]\d/i;
+  str = str.replace(reg, ' ' + modes[str.match(reg) | 0]);
+  document.querySelector('#params').value = str;
+}
+
+document.querySelector('#filedialog').addEventListener('click', function () {
+  document.querySelector('#return').value = hex.extensions.hex_dialog_extension.fileDialog(genParameters());
+}, false);
+
+document.addEventListener('mousemove', function (e) {
+  if (e.target.tagName.toLowerCase() == 'h1') {
+    hex.setAsTitleBarAreas(e.clientX, e.clientY);
+    e.stopPropagation();
+  } else {
+    hex.setAsTitleBarAreas(-1, -1);
+    hex.setAsNonBorderAreas(-1, -1);
+  }
+}, false);
+
+document.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+}, false);
+
+updateParameters();
+</script>
+</body>
+</html>
